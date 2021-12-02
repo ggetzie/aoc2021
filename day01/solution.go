@@ -54,7 +54,7 @@ func part2(scanner *bufio.Scanner) int {
 			fmt.Println(err)
 		}
 		buffer = shuffle(num, buffer)
-		if line > 4 && has_increase(buffer) {
+		if line > 3 && has_increase(buffer) {
 			increases++
 		}
 		line++
