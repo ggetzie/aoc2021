@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func part1(scanner *bufio.Scanner) (int, error) {
@@ -48,34 +49,31 @@ func filter(values []string, criteria func(string) bool) []string {
 	return res
 }
 
-func part2(scanner *bufio.Scanner, bitlen int) int {
-	var values []string
-	var bits [][2]int
-
-	for i := 0; i < bitlen; i++ {
-		bits = append(bits, [2]int{0, 0})
+func count_bits(pos int, arr []string) [2]int {
+	var res [2]int
+	for _, item := range arr {
+		index := int(item[pos] - '0')
+		res[index] += 1
 	}
+	return res
+}
 
+func part2(scanner *bufio.Scanner, bitlen int) (int, error) {
+	var values []string
+	var bits [2]int
 	for scanner.Scan() {
 		valTxt := scanner.Text()
 		values = append(values, valTxt)
-		for i := 0; i < bitlen; i++ {
-			if valTxt[i] == '1' {
-				bits[i][1] += 1
-			} else {
-				bits[i][0] += 1
-			}
-		}
+		index := int(valTxt[0] - '0')
+		bits[index] += 1
 	}
+	firstBits := bits
 
 	position := 0
 	oxygen_candidates := values
-
-	fmt.Printf("Bits: %v\n", bits)
-
 	for len(oxygen_candidates) > 1 {
 		oxygen_candidates = filter(oxygen_candidates, func(v string) bool {
-			if bits[position][1] >= bits[position][0] {
+			if bits[1] >= bits[0] {
 				return v[position] == '1'
 			} else {
 				return v[position] == '0'
@@ -85,8 +83,43 @@ func part2(scanner *bufio.Scanner, bitlen int) int {
 			fmt.Printf("Position: %d: oxygen %v\n", position, oxygen_candidates)
 		}
 		position++
+		if position < 12 {
+			bits = count_bits(position, oxygen_candidates)
+		}
+
 	}
-	return 0
+
+	bits = firstBits
+	position = 0
+	c02_candidates := values
+	for len(c02_candidates) > 1 {
+		c02_candidates = filter(c02_candidates, func(v string) bool {
+			if bits[1] < bits[0] {
+				return v[position] == '1'
+			} else {
+				return v[position] == '0'
+			}
+		})
+		if len(c02_candidates) < 5 {
+			fmt.Printf("Position: %d: C02 %v\n", position, c02_candidates)
+		}
+		position++
+		if position < 12 {
+			bits = count_bits(position, c02_candidates)
+		}
+	}
+
+	oxygen, err := strconv.ParseInt(oxygen_candidates[0], 2, 0)
+	if err != nil {
+		return 0, err
+	}
+	c02, err := strconv.ParseInt(c02_candidates[0], 2, 0)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(oxygen * c02), nil
+
 }
 
 func main() {
@@ -110,9 +143,13 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
+		fmt.Printf("Gamma * Epsilon = %d\n", product)
 	} else {
-		product = part2(scanner, bitlen)
+		product, err = part2(scanner, bitlen)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("Oxygen * c02 = %d\n", product)
 	}
-	fmt.Printf("Gamma * Epsilon = %d\n", product)
 
 }
