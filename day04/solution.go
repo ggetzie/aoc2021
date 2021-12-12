@@ -149,7 +149,7 @@ func part2(scanner *bufio.Scanner) (int, error) {
 	// part 2 solution
 	numbers, boards := ReadData(scanner)
 	var playing []ScoredBB
-	var winners []ScoredBB
+	var winners []int
 	for _, board := range boards {
 		playing = append(playing, ScoredBB{board, 0})
 	}
@@ -162,11 +162,12 @@ func part2(scanner *bufio.Scanner) (int, error) {
 			winner, total := playing[i].board.Check()
 			if winner {
 				playing[i].score = total * number
-				winners = append(winners, playing[i])
+				winners = append(winners, i)
 			}
 		}
 	}
-	return winners[len(winners)-1].score, nil
+	index := winners[len(winners)-1]
+	return playing[index].score, nil
 
 }
 
