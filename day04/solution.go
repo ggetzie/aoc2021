@@ -71,6 +71,11 @@ func (p *BingoBoard) Reset() {
 	*p = board
 }
 
+type ScoredBB struct {
+	board BingoBoard
+	score int
+}
+
 func MakeBoard(lines [5]string) BingoBoard {
 	var res BingoBoard
 	s := regexp.MustCompile(`\D+`)
@@ -124,7 +129,6 @@ func ReadData(scanner *bufio.Scanner) ([]int, []BingoBoard) {
 func part1(scanner *bufio.Scanner) (int, error) {
 	// part 1 solution
 	numbers, boards := ReadData(scanner)
-	fmt.Printf("Numbers: %v\n", numbers)
 	for _, number := range numbers {
 		for i := 0; i < len(boards); i++ {
 			boards[i].MarkValue(number)
@@ -143,7 +147,26 @@ func part1(scanner *bufio.Scanner) (int, error) {
 
 func part2(scanner *bufio.Scanner) (int, error) {
 	// part 2 solution
-	return 0, nil
+	numbers, boards := ReadData(scanner)
+	var playing []ScoredBB
+	var winners []ScoredBB
+	for _, board := range boards {
+		playing = append(playing, ScoredBB{board, 0})
+	}
+	for _, number := range numbers {
+		for i := 0; i < len(playing); i++ {
+			if playing[i].score > 0 {
+				continue
+			}
+			playing[i].board.MarkValue(number)
+			winner, total := playing[i].board.Check()
+			if winner {
+				playing[i].score = total * number
+				winners = append(winners, playing[i])
+			}
+		}
+	}
+	return winners[len(winners)-1].score, nil
 
 }
 
@@ -172,7 +195,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("Oxygen * c02 = %d\n", product)
+		fmt.Printf("Last Winner Score = %d\n", product)
 	}
 
 }
